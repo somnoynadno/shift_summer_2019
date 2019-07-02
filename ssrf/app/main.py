@@ -1,10 +1,25 @@
 from flask import Flask, request, render_template
 import pycurl
+import re
 import requests
 from io import BytesIO
 
 app = Flask(__name__)
 
+blacklist = ['127.','localhost','0177.']
+
+def url_filter(url):
+	regex='^'
+	first=1
+	for e in blacklist:
+		if 0==first:
+			regex += '|'
+		regex += '(http*.:\/\/'+e+')'
+		first=0
+	print(regex)
+	reg = re.compile(regex)
+	result = re.match(reg, url)
+	return result != None
 
 @app.route("/")
 def hello():
@@ -21,6 +36,9 @@ def get_url_curl():
 
 	if url is None:
 		url = 'https://ya.ru'
+
+	if url_filter(url):
+		return render_template('index.html')
 
 	# prepare curl
 	curl_wrap = pycurl.Curl()
@@ -49,6 +67,9 @@ def get_url_requests():
 
 	if url is None:
 		url = 'https://ya.ru'
+
+	if url_filter(url):
+		return render_template('index.html')
 
 	info = requests.get(url).text
 
