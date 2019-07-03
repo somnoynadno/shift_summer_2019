@@ -1,25 +1,32 @@
 from flask import Flask, request, render_template
 import pycurl
 import re
+import socket
 import requests
 from io import BytesIO
 
 app = Flask(__name__)
 
-blacklist = ['127.','localhost','0177.']
+blacklist = ['127.']
+allowed_schemes = ['http','https']
 
-def url_filter(url):
-	regex='^'
-	first=1
-	for e in blacklist:
-		if 0==first:
-			regex += '|'
-		regex += '(http*.:\/\/'+e+')'
-		first=0
-	print(regex)
-	reg = re.compile(regex)
-	result = re.match(reg, url)
-	return result != None
+def check_url_schemes(url):
+	for schema in allowed_schemes:
+		result = re.match(schema+'://', url)
+		if result: return 0
+	return 1
+
+def check_dns(url):
+	dns=url.split('//')[1].split('/')[0]
+	ip_list = []
+	ais = socket.getaddrinfo(dns,0,0,0,0)
+	for result in ais:
+		for addr in blacklist:
+			check = re.match(addr, result[-1][0])
+			if check: return 1
+		ip_list.append(result[-1][0])
+	ip_list = list(set(ip_list))
+	return 0
 
 @app.route("/")
 def hello():
@@ -37,8 +44,8 @@ def get_url_curl():
 	if url is None:
 		url = 'https://ya.ru'
 
-	if url_filter(url):
-		return render_template('index.html')
+	if check_url_schemes(url) or check_dns(url):
+		return render_template('access_deny.html')
 
 	# prepare curl
 	curl_wrap = pycurl.Curl()
@@ -68,8 +75,8 @@ def get_url_requests():
 	if url is None:
 		url = 'https://ya.ru'
 
-	if url_filter(url):
-		return render_template('index.html')
+	if check_url_schemes(url) or check_dns(url):
+		return render_template('access_deny.html')
 
 	info = requests.get(url).text
 
