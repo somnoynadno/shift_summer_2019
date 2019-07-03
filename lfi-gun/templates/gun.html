@@ -1,0 +1,19 @@
+<html>
+	<title>DESTROYER</title>
+	<body>
+	<h1>LFI GUN</h1>
+	 <form action="/gun" method="post">
+  		IP-address: <input type="text" name="ip"><br>
+	  	PORT: <input type="text" name="port"><br>
+  		PARAM: <input type="text" name="param"><br>
+  		<input type="submit" value="Submit">
+	</form> 
+	<h2>Result:<h2>
+		IP:{{ip}}
+		PORT:{{port}}
+		PARAM:{{param}}
+	<h3>
+		{{result}}
+	</h3>
+	</body>
+</html>
