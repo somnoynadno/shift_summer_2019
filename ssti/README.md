@@ -24,7 +24,9 @@ Client-side / Server-side Template Injection
 `{{  7*7  }}`
 
 `{{ 7 * '7'}}`
+
 и т.д. 
+
 Выполнение кода, введенного в шаблоне, сигнализирует о наличии данной  уязвимости.
 
 
@@ -56,7 +58,7 @@ https://defcon.ru/web-security/3840/
 
 
 	{% for key, value in config.iteritems() %}
-			<dt>{{ key|e }}</dt>
+		<dt>{{ key|e }}</dt>
    		<dd>{{ value|e }}</dd>
 	{% endfor %}
 
