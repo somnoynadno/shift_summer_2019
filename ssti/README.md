@@ -10,11 +10,11 @@ SSTI (server side template injection) - внедрение шаблонов на
 Client-side (CS) / Server-side Template Injection (SS)
 
 SSTI различается по типу установленного шаблонизатора: 
--Smarty (PHP)
--Mako (Python)
--Apache Velocity (Java)
--jinja2 (Python)
--Twig (PHP)
+- Smarty (PHP)
+- Mako (Python)
+- Apache Velocity (Java)
+- jinja2 (Python)
+- Twig (PHP)
 
 [Link](https://www.youtube.com/watch?v=3cT0uE7Y87s)
 ## Условия
