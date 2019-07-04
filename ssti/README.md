@@ -7,9 +7,16 @@ SSTI (server side template injection) - внедрение шаблонов на
 ## Классификация
 
 
-Client-side / Server-side Template Injection
+Client-side (CS) / Server-side Template Injection (SS)
 
+SSTI различается по типу установленного шаблонизатора: 
+-Smarty (PHP)
+-Mako (Python)
+-Apache Velocity (Java)
+-jinja2 (Python)
+-Twig (PHP)
 
+[Link](https://www.youtube.com/watch?v=3cT0uE7Y87s)
 ## Условия
 - ОС: любая
 - язык: зависит от шаблонизатора (python, php, java)
@@ -28,7 +35,8 @@ Client-side / Server-side Template Injection
 и т.д. 
 
 Выполнение кода, введенного в шаблоне, сигнализирует о наличии данной  уязвимости.
-
+В некоторых случаях одно выражаение может приводить к разным ответам сервера (в зависимость от того, какой шаблонизатор используется). Например, `{{7*’7′}}` вернёт 49, если используется Twig, 7777777, если используется Jinja2 и не вернёт ничего, если шаблонизатор не используется.
+![Рисунок 1](https://1.bp.blogspot.com/-txouq1ZZJw4/Vayv3Np5VGI/AAAAAAAAAFY/6zY9F6SFSEY/s640/Screen%2BShot%2B2015-07-20%2Bat%2B09.21.56.png)
 
 ## Информация:
 
