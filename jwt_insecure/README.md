@@ -1,4 +1,4 @@
-# уязвимость/атака
+# jwt_insecure
 
 ## Описание
 
@@ -210,8 +210,10 @@ def index_1():
 
 	return render_template('index_login.html', isLoggedIn=isLoggedIn, result=result)
 ```
-
-result = jwt.decode(session, key=jwt_secret, verify=False) замена False на true приводит к тому что токен будет всегда приниматься.  
+```
+result = jwt.decode(session, key=jwt_secret, verify = False)
+```
+Установка параметра verify в значение False приводит к тому, что токен будет всегда приниматься. 
 
 Взлом HS256 тупо брутом.  
 ```
@@ -262,7 +264,7 @@ Burp suit
 ## Защита
 ### Основные меры
 
-Для кода в задании убрать верификаию 	для этого кода
+Для кода в задании убрать верификаию для этого кода
 
 ```
 result = jwt.decode(session, key=jwt_secret, verify=False)
