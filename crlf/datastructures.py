@@ -14,8 +14,8 @@ import mimetypes
 from copy import deepcopy
 from itertools import repeat
 from collections import Container, Iterable, MutableSet
+import io
 
-from werkzeug._internal import _missing, _empty_stream
 from werkzeug._compat import iterkeys, itervalues, iteritems, iterlists, \
     PY2, text_type, integer_types, string_types, make_literal_wrapper, \
     to_native
@@ -249,9 +249,9 @@ class UpdateDictMixin(object):
             self.on_update(self)
         return rv
 
-    def pop(self, key, default=_missing):
+    def pop(self, key, default=None):
         modified = key in self
-        if default is _missing:
+        if default is None:
             rv = super(UpdateDictMixin, self).pop(key)
         else:
             rv = super(UpdateDictMixin, self).pop(key, default)
@@ -616,7 +616,7 @@ class MultiDict(TypeConversionDict):
         for key, value in iter_multi_items(other_dict):
             MultiDict.add(self, key, value)
 
-    def pop(self, key, default=_missing):
+    def pop(self, key, default=None):
         """Pop the first item for a list on the dict.  Afterwards the
         key is removed from the dict, so additional values are discarded:
 
@@ -638,7 +638,7 @@ class MultiDict(TypeConversionDict):
 
             return lst[0]
         except KeyError as e:
-            if default is not _missing:
+            if default is not None:
                 return default
             raise exceptions.BadRequestKeyError(str(e))
 
@@ -862,11 +862,11 @@ class OrderedMultiDict(MultiDict):
             bucket.unlink(self)
         return [x.value for x in buckets]
 
-    def pop(self, key, default=_missing):
+    def pop(self, key, default=None):
         try:
             buckets = dict.pop(self, key)
         except KeyError as e:
-            if default is not _missing:
+            if default is not None:
                 return default
             raise exceptions.BadRequestKeyError(str(e))
         for bucket in buckets:
@@ -1100,7 +1100,7 @@ class Headers(object):
         """
         return self.__delitem__(key, _index_operation=False)
 
-    def pop(self, key=None, default=_missing):
+    def pop(self, key=None, default=None):
         """Removes and returns a key or index.
 
         :param key: The key to be popped.  If this is an integer the item at
@@ -1117,7 +1117,7 @@ class Headers(object):
             rv = self[key]
             self.remove(key)
         except KeyError:
-            if default is not _missing:
+            if default is not None:
                 return default
             raise
         return rv
@@ -2640,7 +2640,7 @@ class FileStorage(object):
                  content_type=None, content_length=None,
                  headers=None):
         self.name = name
-        self.stream = stream or _empty_stream
+        self.stream = stream or io.BytesIO()
 
         # if no filename is provided we can attempt to get the filename
         # from the stream object passed.  There we have to be careful to
