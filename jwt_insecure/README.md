@@ -229,55 +229,67 @@ eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJpc19hZG1pbiI6dHJ
 
 https://www.nccgroup.trust/uk/about-us/newsroom-and-events/blogs/2019/january/jwt-attack-walk-through/
 
-### Инструменты
-[PyJWT library](https://github.com/jpadilla/pyjwt)  
-Burp suit
+## Инструменты
+
+- PyJWT library (https://github.com/jpadilla/pyjwt)
+- Burp suit (https://portswigger.net/burp)
 
 
 ## Ущерб
-Если токены используются для контроля серверов, то велика вероятность или слива или удаления всей базы данных.  
-Получение прав на изменение данных на серверах и сайтах.  
-Токены также используются для входа в различные сервисы по типу асаны, кибаны, почты что приведет к потере всей бизнес информации.  
-Использование токенов в любом виде что физических, что электронных позволяет пользователям избавляться от процедур идентификации и аутентификации, и сразу переходить к получению авторизованного доступа. Злоумышленник получив такой доступ будет обладать всеми правами сотрудника, самое  опасное запуск скриптов и зловредов внутри защитного периметра.
 
+1. Если токены используются для контроля серверов, то велика вероятность слива или удаления всей базы данных.
+
+2. Получение прав на изменение данных на серверах и сайтах.
+
+3. JWT используются для входа в различные сервисы по типу асаны, кибаны, почты, что может привети к потере всей бизнес информации.
+
+4. Использование токенов в физическом или электронном виде позволяет пользователям избавляться от процедур идентификации и аутентификации, и сразу переходить к получению авторизованного доступа. Злоумышленник заполучив такой ключ будет обладать всеми правами сотрудника, самое опасное в этом запуск скриптов и зловредов внутри защитного периметра.
 
 ## Защита
 ### Основные меры
 
-Для кода в задании убрать верификаию для этого кода
+Обязательно отключить возможность использования алгоритма `None`
+Включить верификацию токена перед использованием данных из него
 
 ```
-result = jwt.decode(session, key=jwt_secret, verify=False)
+result = jwt.decode(session, key=jwt_secret, verify = True)
 ```
+Перейти на более устойчивые версии токенов:
 
-[Branca](https://branca.io) - IETF XChaCha20-Poly1305 AEAD symmetric encryption,the enrypted token is base62 encoded which makes it.   
-Структура токена:
-```
-"URL safe Version (1B) || Timestamp (4B) || Nonce (24B) || Ciphertext (*B) || Tag (16B)"  
-```
+1. Branca
+> IETF XChaCha20-Poly1305 AEAD symmetric encryption,the enrypted token is base62 encoded which makes it.
+>
+> Структура токена:
+> `"URL safe Version (1B) || Timestamp (4B) || Nonce (24B) || Ciphertext (*B) || Tag (16B)"`
+>
+> https://branca.io
 
-Macaroons - токены от google
+2. Macaroons - токены от google
+> Macaroons: Cookies with Contextual Caveats for Decentralized Authorization in the Cloud
+>
+> https://ai.google/research/pubs/pub41892.pdf
 
 ### Превентивные меры
-Используйте сильные ключи и секреты для шифрования.  
-Просмотрите библиотеки, которые вы выбираете.  
-Убедитесь, что вы проверите подпись.  
-Убедитесь, что ваши токены истекают.  
-Использовать другое шифрование.  
-Не храните данные в локальных хранилищах (и сессиях).  
-Проверьте сайт на CSRF XSS.  
-https://datatracker.ietf.org/doc/draft-ietf-oauth-jwt-bcp/?include_text=1
+
+- Используйте сильные ключи и секреты для шифрования.
+
+- Просмотрите библиотеки, которые вы выбираете.
+
+- Убедитесь, что вы проверите подпись.
+
+- Убедитесь, что ваши токены истекают.
+
+- Использовать другое шифрование.
+
+- Не храните данные в локальных хранилищах (и сессиях).
+
+- Проверьте сайт на CSRF XSS.
+
+- JSON Web Token Best Current Practices (https://datatracker.ietf.org/doc/draft-ietf-oauth-jwt-bcp/?include_text=1)
 
 ## Дополнительно
-[Elleptic curves vuln](https://auth0.com/blog/critical-vulnerability-in-json-web-encryption/)  
-https://connect2id.com/products/nimbus-jose-jwt/examples
-
-[Owasp cheat sheet](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/JSON_Web_Token_Cheat_Sheet_for_Java.md)
-
-https://auth0.com/blog/brute-forcing-hs256-is-possible-the-importance-of-using-strong-keys-to-sign-jwts/#What-is-a-JSON-Web-Token-
-
-[Mac vs sig attack](https://snikt.net/blog/2019/05/16/jwt-signature-vs-mac-attacks/)
-## Обход защиты
-Если существуют варианты обхода защиты, то можно их здесь перечислить.
-
-Если есть возможность, то надо написать в чем заключается защита и каким образом она обходится.
+- Elleptic curves vuln (https://auth0.com/blog/critical-vulnerability-in-json-web-encryption/)
+- JOSE & JSON Web Token (JWT) Examples (https://connect2id.com/products/nimbus-jose-jwt/examples)
+- Owasp cheat sheet (https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/JSON_Web_Token_Cheat_Sheet_for_Java.md)
+- Brute Forcing HS256 is Possible: The Importance of Using Strong Keys in Signing JWTs (https://auth0.com/blog/brute-forcing-hs256-is-possible-the-importance-of-using-strong-keys-to-sign-jwts/)
+- Mac vs sig attack (https://snikt.net/blog/2019/05/16/jwt-signature-vs-mac-attacks/)
